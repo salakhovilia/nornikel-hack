@@ -1,0 +1,51 @@
+{
+  "printWidth": 120,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "tabWidth": 4,
+  "overrides": [
+    {
+      "files": ["**/*.scss"],
+      "options": {
+        "order": "concentric-css"
+      }
+    }
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true,
+  "importOrderCaseInsensitive": true,
+  "importOrder": [
+    "^react$",
+    "^clsx$",
+    "<THIRD_PARTY_MODULES>",
+    "^@domains/(.*)$",
+    "^@domains$",
+    "^@store/(.*)$",
+    "^@store$",
+    "^@api/(.*)$",
+    "^@api$",
+    "^@utils/(.*)$",
+    "^@utils$",
+    "^@hooks/(.*)$",
+    "^@hooks$",
+    "^@vendor/(.*)$",
+    "^@vendor$",
+    "^@views/(.*)$",
+    "^@views$",
+    "^@layouts/(.*)$",
+    "^@layouts$",
+    "^@containers/(.*)$",
+    "^@containers$",
+    "^@components/(.*)$",
+    "^@components$",
+    "^\\.\\/.+(?<!s?css)$",
+    "^@styles$",
+    "^@styles/(.*)$",
+    "^\\./.+\\.s?css$",
+    "^@assets$",
+    "^@assets/(.*)$",
+    "^[./]"
+  ]
+}

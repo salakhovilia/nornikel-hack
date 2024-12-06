@@ -1,0 +1,77 @@
+{
+    "name": "nornikel-hack",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "preinstall": "npx only-allow pnpm",
+        "dev": "vite --host",
+        "build": "tsc && vite build",
+        "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+        "preview": "vite preview",
+        "prepare": "husky",
+        "lint-staged": "lint-staged",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "react-router-dom": "^6.28.0"
+    },
+    "devDependencies": {
+        "@reduxjs/toolkit": "^2.3.0",
+        "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+        "@types/node": "^22.9.0",
+        "@types/react": "^18.3.12",
+        "@types/react-dom": "^18.3.1",
+        "@typescript-eslint/eslint-plugin": "^8.14.0",
+        "@typescript-eslint/parser": "^8.14.0",
+        "@vitejs/plugin-react": "^4.3.3",
+        "clsx": "^2.1.1",
+        "dotenv": "^16.4.6",
+        "dotenv-safe": "^9.1.0",
+        "eslint": "^9.15.0",
+        "eslint-config-airbnb": "19.0.4",
+        "eslint-config-airbnb-typescript": "^18.0.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-define-config": "^2.1.0",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
+        "eslint-plugin-prettier": "^5.2.1",
+        "eslint-plugin-react": "^7.37.2",
+        "eslint-plugin-react-hooks": "^5.0.0",
+        "eslint-plugin-react-refresh": "^0.4.14",
+        "eslint-plugin-unused-imports": "^4.1.4",
+        "husky": "^9.1.6",
+        "lint-staged": "^15.2.10",
+        "postcss-scss": "^4.0.9",
+        "prettier": "^3.3.3",
+        "prettier-plugin-css-order": "^2.1.2",
+        "process": "^0.11.10",
+        "react-redux": "^9.1.2",
+        "sass": "^1.81.0",
+        "stylelint": "^16.10.0",
+        "stylelint-config-standard": "^36.0.1",
+        "stylelint-order": "^6.0.4",
+        "stylelint-prettier": "^5.0.2",
+        "stylelint-scss": "^6.9.0",
+        "typescript": "^5.6.3",
+        "vite": "^5.4.11",
+        "vite-plugin-svgr": "^4.3.0",
+        "vite-tsconfig-paths": "^5.1.2"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "src/**/*.{js,jsx,ts,tsx}": [
+            "eslint",
+            "prettier --write --ignore-unknown"
+        ],
+        "src/**/*.{css,scss,sass}": [
+            "prettier --write --ignore-unknown"
+        ]
+    }
+}
