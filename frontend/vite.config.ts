@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
     return {
         base: '/',
         build: {
-            outDir: './build',
+            outDir: './dist',
         },
         publicDir: './public',
         define: {
@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => {
                 '@components': path.resolve(__dirname, './src/components'),
                 '@styles': path.resolve(__dirname, './src/styles'),
                 '@assets': path.resolve(__dirname, './src/assets'),
+                '@views': path.resolve(__dirname, './src/views'),
+                '@mock': path.resolve(__dirname, './src/mock'),
             },
         },
         plugins: [react(), svgrPlugin()],

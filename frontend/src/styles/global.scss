@@ -8,7 +8,6 @@
 
 :root {
     --background-color: #292e39;
-
     --foreground-color: #020308;
 }
 
@@ -18,11 +17,10 @@ body {
     padding: 0;
     scroll-behavior: smooth;
     line-height: 1.25;
-    font-family: 'Montserrat', sans-serif;
-    background-color: black;
+    font-family: 'Inter', sans-serif;
+    background-color: white;
     position: relative;
-
-    color: white;
+    color: black;
     overflow: hidden;
     height: 100%;
 }

@@ -1,0 +1,85 @@
+.searchLayout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    grid-template-rows: 1fr;
+    height: 100vh;
+    column-gap: 24px;
+}
+
+.searchWindow {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    overflow-y: hidden;
+}
+
+.userInput {
+    background: white;
+    padding: 16px;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+.main {
+    margin-top: 16px;
+    background: white;
+    padding: 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+}
+
+.pdfViewer {
+    overflow-y: auto;
+    height: 100%;
+}
+
+.fileSidebar {
+    background-color: white;
+    color: black;
+    height: 100%;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.title {
+    padding: 8px;
+    width: 100%;
+    border-bottom: 1px solid #efefef;
+}
+
+.fileList {
+    padding-top: 16px;
+}
+
+.fileSidebarTitle {
+    font-size: 18px;
+}
+
+.fileItem {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    gap: 8px;
+    color: black;
+    cursor: pointer;
+
+    &:hover {
+        background: #f5f5f5;
+        color: #1677fe;
+        border-radius: 4px;
+
+        .fileIcon {
+            color: #1677fe;
+        }
+    }
+
+    .fileIcon {
+        color: black;
+    }
+}
+
+.fileName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}

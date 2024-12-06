@@ -1,7 +1,106 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "target": "es2015",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "types": [
+            "vite-plugin-svgr/client",
+            "vite/client",
+            "node",
+            "@types/telegram-web-app"
+        ],
+        "paths": {
+            "@domains/*": [
+                "domains/*"
+            ],
+            "@domains": [
+                "domains"
+            ],
+            "@store/*": [
+                "store/*"
+            ],
+            "@store": [
+                "store"
+            ],
+            "@api/*": [
+                "api/*"
+            ],
+            "@api": [
+                "api"
+            ],
+            "@utils/*": [
+                "utils/*"
+            ],
+            "@utils": [
+                "utils"
+            ],
+            "@hooks/*": [
+                "hooks/*"
+            ],
+            "@hooks": [
+                "hooks"
+            ],
+            "@views/*": [
+                "views/*"
+            ],
+            "@views": [
+                "views"
+            ],
+            "@layouts/*": [
+                "layouts/*"
+            ],
+            "@layouts": [
+                "layouts"
+            ],
+            "@components/*": [
+                "components/*"
+            ],
+            "@components": [
+                "components"
+            ],
+            "@styles/*": [
+                "styles/*"
+            ],
+            "@styles": [
+                "styles"
+            ],
+            "@mock/*": [
+                "mock/*"
+            ],
+            "@mock": [
+                "mock"
+            ],
+            "@assets/*": [
+                "assets/*"
+            ],
+            "@assets": [
+                "assets"
+            ]
+        }
+    },
+    "include": [
+        "src"
+    ],
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
 }

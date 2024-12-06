@@ -14,16 +14,20 @@
         "type-check": "tsc --noEmit"
     },
     "dependencies": {
+        "@ant-design/icons": "^5.5.2",
+        "antd": "^5.22.3",
+        "pdfjs-dist": "^4.9.155",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
+        "react-pdf": "^9.1.1",
         "react-router-dom": "^6.28.0"
     },
     "devDependencies": {
         "@reduxjs/toolkit": "^2.3.0",
         "@trivago/prettier-plugin-sort-imports": "^4.3.0",
         "@types/node": "^22.9.0",
-        "@types/react": "^18.3.12",
-        "@types/react-dom": "^18.3.1",
+        "@types/react": "^18.3.14",
+        "@types/react-dom": "^18.3.2",
         "@typescript-eslint/eslint-plugin": "^8.14.0",
         "@typescript-eslint/parser": "^8.14.0",
         "@vitejs/plugin-react": "^4.3.3",
@@ -55,7 +59,7 @@
         "stylelint-order": "^6.0.4",
         "stylelint-prettier": "^5.0.2",
         "stylelint-scss": "^6.9.0",
-        "typescript": "^5.6.3",
+        "typescript": "^5.7.2",
         "vite": "^5.4.11",
         "vite-plugin-svgr": "^4.3.0",
         "vite-tsconfig-paths": "^5.1.2"
