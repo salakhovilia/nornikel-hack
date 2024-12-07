@@ -71,6 +71,13 @@ async def query(request: Request, query: QueryRequest):
     return result
 
 
+@app.post("/reindex")
+async def query(request: Request):
+    result = await agentService.reindex()
+
+    return result
+
+
 @app.post("/files")
 async def add_file(file: UploadFile, meta: Annotated[str, Form()]):
     extension = mimetypes.guess_extension(file.content_type)

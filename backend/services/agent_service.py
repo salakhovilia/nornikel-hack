@@ -129,3 +129,6 @@ class AgentService:
             "sources": search_result.points,
             "answer": output_text[0],
         }
+
+    async def reindex(self):
+        await aclient.delete(COLLECTION_NAME, "*")
