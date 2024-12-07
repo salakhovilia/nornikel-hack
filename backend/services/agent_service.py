@@ -1,13 +1,16 @@
 import logging
 import uuid
 
+import pymupdf
+from PIL import Image
 from llama_index.core import SimpleDirectoryReader, Document
 from qdrant_client import models
 
 from base.db import aclient, COLLECTION_NAME, vector_store, index
 from base.text_ingestor import TextIngestionPipeline
-from model import ColPaliProcessor, ColPaliModel
+from model import ColPaliProcessor, ColPaliModel, GenProcessor, GenModel
 from pdf_reader import PdfColPaliReader
+from qwen_vl_utils import process_vision_info
 
 FILE_EXTRACTOR = {"pdf": PdfColPaliReader()}
 
@@ -82,7 +85,58 @@ class AgentService:
             ),
         )
 
+        path = search_result.points[0].payload["file_path"]
+        index = int(search_result.points[0].payload["source"]) - 1
+
+        pdf = pymupdf.open(path)
+        page = pdf.load_page(index)
+        pix = page.get_pixmap()
+
+        image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+        image = image.resize((448, 448))
+
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "image": image,
+                    },
+                    {"type": "text", "text": search_result.points[0].payload["text"]},
+                    {
+                        "type": "text",
+                        "text": f"Answer the question using the images provided, which may contain the answer.\n\nQuestion: {question}",
+                    },
+                ],
+            }
+        ]
+        text = GenProcessor.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+
+        image_inputs, video_inputs = process_vision_info(messages)
+        inputs = GenProcessor(
+            text=[text],
+            images=image_inputs,
+            videos=video_inputs,
+            padding=True,
+            return_tensors="pt",
+        )
+        inputs = inputs.to(GenModel.device)
+
+        generated_ids = GenModel.generate(**inputs, max_new_tokens=50)
+        generated_ids_trimmed = [
+            out_ids[len(in_ids) :]
+            for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+        ]
+        output_text = GenProcessor.batch_decode(
+            generated_ids_trimmed,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False,
+        )
+
         return {
             "sources": search_result.points,
-            "answer": "",
+            "answer": output_text[0],
         }
