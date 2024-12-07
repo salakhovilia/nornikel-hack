@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
                 '@assets': path.resolve(__dirname, './src/assets'),
                 '@views': path.resolve(__dirname, './src/views'),
                 '@mock': path.resolve(__dirname, './src/mock'),
+                '@hooks': path.resolve(__dirname, './src/hooks'),
             },
         },
         plugins: [react(), svgrPlugin()],
