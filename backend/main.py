@@ -70,7 +70,7 @@ def healthcheck():
 async def query(request: Request, query: QueryRequest):
     result = await agentService.query(query.question, query.meta)
 
-    return {"response": result}
+    return result
 
 
 @app.post("/files")
