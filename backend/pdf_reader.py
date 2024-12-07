@@ -62,9 +62,7 @@ class PdfColPaliReader(BaseReader):
 
             embeddings = ColPaliModel(**processed_img)
 
-            embeddings_list = list(
-                embeddings.to(ColPaliModel.device).float().numpy()[0].tolist()
-            )
+            embeddings_list = list(embeddings.cpu().float().numpy()[0].tolist())
 
             docs.append(
                 {
