@@ -6,6 +6,24 @@ import Sources from '@components/Sources/Sources';
 import { v4 as uuidv4 } from 'uuid';
 import { mockAnswers } from '@mock/answers';
 
+type Payload = {
+    total_pages: number;
+    file_path: string;
+    source: string;
+    text: string;
+    docId: string;
+};
+
+type ResponseItem = {
+    id: string;
+    version: number;
+    score: number;
+    payload: Payload;
+    vector: unknown;
+    shard_key: unknown;
+    order_value: unknown;
+};
+
 function Search() {
     const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
     const [questions, setQuestions] = useState<
@@ -20,11 +38,13 @@ function Search() {
         localStorage.setItem('questions', JSON.stringify(questions));
     }, [questions]);
 
+    console.log('Questions: ', questions);
+
     const handleBlockClick = (id: string) => {
         setActiveQuestionId(activeQuestionId === id ? null : id);
     };
 
-    const handleUserQuestion = (userQuestion: string) => {
+    const handleUserQuestion = async (userQuestion: string) => {
         if (isAnswering) return;
 
         setIsAnswering(true);
@@ -35,7 +55,7 @@ function Search() {
         const newQuestion = {
             id: questionId,
             question: userQuestion,
-            answer: '',
+            answer: 'Ответ с сервера',
             isLoading: true,
             sources: randomAnswer.sources,
         };
@@ -43,22 +63,47 @@ function Search() {
         setQuestions((prev) => [newQuestion, ...prev]);
         setActiveQuestionId(questionId);
 
-        const randomDelay = Math.floor(Math.random() * 4000) + 1000;
+        try {
+            const response = await fetch('http://localhost:8000/api/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: userQuestion,
+                    meta: {},
+                }),
+            });
+            if (response.ok) {
+                const data = await response.json();
 
-        setTimeout(() => {
-            setQuestions((prev) =>
-                prev.map((q) =>
-                    q.id === questionId
-                        ? {
-                              ...q,
-                              isLoading: false,
-                              answer: randomAnswer.answer,
-                          }
-                        : q,
-                ),
-            );
+                const filePathsSet = new Set<string>();
+
+                data.response.forEach((item: ResponseItem) => {
+                    if (item.payload && item.payload.file_path && item.payload.docId) {
+                        const modifiedPath = item.payload.file_path.replace(`uploads/${item.payload.docId}_`, '');
+                        filePathsSet.add(modifiedPath);
+                    }
+                });
+
+                const uniqueSources = [...filePathsSet];
+
+                setQuestions((prev) =>
+                    prev.map((q) =>
+                        q.id === questionId
+                            ? { ...q, isLoading: false, answer: data.answer, sources: uniqueSources }
+                            : q,
+                    ),
+                );
+
+                setIsAnswering(false);
+            } else {
+                throw new Error('Ошибка запроса');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
             setIsAnswering(false);
-        }, randomDelay);
+        }
     };
 
     const activeQuestion = questions.find((q) => q.id === activeQuestionId);
@@ -82,7 +127,7 @@ function Search() {
             </div>
             <Sources
                 question={activeQuestion?.question || null}
-                sources={activeQuestion?.sources || null}
+                sources={activeQuestion?.sources || []}
                 isLoading={isAnswering}
             />
         </div>
