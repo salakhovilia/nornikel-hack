@@ -67,7 +67,9 @@ class AgentService:
         )
         query_embedding = ColPaliModel(**batch_query)
 
-        multivector_query = query_embedding[0].cpu().float().numpy().tolist()
+        multivector_query = (
+            query_embedding[0].to(ColPaliModel.device).float().numpy().tolist()
+        )
         search_result = await aclient.query_points(
             collection_name=COLLECTION_NAME,
             query=multivector_query,

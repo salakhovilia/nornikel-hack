@@ -36,14 +36,14 @@ class ColPaliEmbedding(BaseEmbedding):
         )
         embeddings = self._model(**processed_query)
 
-        return embeddings.float().numpy()[0].tolist()
+        return embeddings.to(self._model.device).float().numpy()[0].tolist()
 
     def _get_text_embedding(self, text: str) -> List[List[float]]:
         processed_query = self._processor.process_queries([text]).to(self._model.device)
 
         embeddings = self._model(**processed_query)
 
-        return embeddings.float().numpy()[0].tolist()
+        return embeddings.to(self._model.device).float().numpy()[0].tolist()
 
     def _get_text_embeddings(self, texts: List[str]) -> List[List[List[float]]]:
         processed_queries = self._processor.process_queries(texts)

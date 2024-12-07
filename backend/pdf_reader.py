@@ -56,11 +56,15 @@ class PdfColPaliReader(BaseReader):
 
             image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
             image = image.resize((448, 448))
-            processed_img = ColPaliProcessor.process_images([image])
+            processed_img = ColPaliProcessor.process_images([image]).to(
+                ColPaliModel.device
+            )
 
             embeddings = ColPaliModel(**processed_img)
 
-            embeddings_list = list(embeddings.float().numpy()[0].tolist())
+            embeddings_list = list(
+                embeddings.to(ColPaliModel.device).float().numpy()[0].tolist()
+            )
 
             docs.append(
                 {
