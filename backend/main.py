@@ -24,7 +24,7 @@ Settings.llm = None
 import aiofiles
 import uvicorn
 
-from fastapi import FastAPI, UploadFile, Form
+from fastapi import FastAPI, UploadFile, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 
 from services.agent_service import AgentService
@@ -72,14 +72,16 @@ async def query(request: Request, query: QueryRequest):
 
 
 @app.post("/reindex")
-async def query(request: Request):
+async def reindex(request: Request):
     result = await agentService.reindex()
 
     return result
 
 
 @app.post("/files")
-async def add_file(file: UploadFile, meta: Annotated[str, Form()]):
+async def add_file(
+    file: UploadFile, meta: Annotated[str, Form()], background_tasks: BackgroundTasks
+):
     extension = mimetypes.guess_extension(file.content_type)
 
     if not extension:
@@ -95,11 +97,7 @@ async def add_file(file: UploadFile, meta: Annotated[str, Form()]):
 
     meta = json.loads(meta)
 
-    try:
-        await agentService.process_file(id, file_path, meta)
-    except Exception as e:
-        os.remove(file_path)
-        raise e
+    background_tasks.add_task(agentService.process_file, id, file_path, meta)
 
     return {"status": "ok"}
 
