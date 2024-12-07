@@ -1,5 +1,5 @@
 import torch
-from colpali_engine import ColQwen2, ColQwen2Processor
+from colpali_engine import ColQwen2, ColQwen2Processor, ColPali, ColPaliProcessor
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 
 MODEL_NAME = "vidore/colpali-v1.1"
@@ -8,11 +8,11 @@ device = "cpu"
 if torch.cuda.is_available():
     device = "cuda:0"
 
-ColPaliModel = ColQwen2.from_pretrained(
+ColPaliModel = ColPali.from_pretrained(
     MODEL_NAME, torch_dtype="auto", device_map=device, offload_folder=".offload"
 )
 
-ColPaliProcessor = ColQwen2Processor.from_pretrained(MODEL_NAME)
+ColPaliProcessor = ColPaliProcessor.from_pretrained(MODEL_NAME)
 
 # If you have more VRAM, feel free to use more powerful models !
 GenModel = Qwen2VLForConditionalGeneration.from_pretrained(

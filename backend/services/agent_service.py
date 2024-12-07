@@ -100,6 +100,7 @@ class AgentService:
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue())
+        img_bytes = f"data:image/jpeg;base64,{img_str}"
 
         messages = [
             {
@@ -107,8 +108,7 @@ class AgentService:
                 "content": [
                     {
                         "type": "image",
-                        "image": bytes("data:image/jpeg;base64,", encoding="utf-8")
-                        + img_str,
+                        "image": image,
                     },
                     {"type": "text", "text": search_result.points[0].payload["text"]},
                     {
