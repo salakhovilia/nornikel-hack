@@ -3,18 +3,19 @@ import { FileOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Sources.module.scss';
+import { Source } from '@domains/question';
 
 type SourcesProps = {
     question: string | null;
-    sources: string[] | null;
+    sources: Source[] | null;
     isLoading: boolean;
 };
 
 const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
     const navigate = useNavigate();
 
-    const handleSourceClick = (source: string) => {
-        navigate(`/source?name=${encodeURIComponent(source)}`);
+    const handleSourceClick = (file_path: string) => {
+        navigate(`/source?name=${file_path}`);
     };
 
     return (
@@ -29,9 +30,13 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
                     </div>
                 ) : sources && sources.length > 0 ? (
                     sources.map((source, index) => (
-                        <div key={index} className={styles.fileItem} onClick={() => handleSourceClick(source)}>
+                        <div
+                            key={index}
+                            className={styles.fileItem}
+                            onClick={() => handleSourceClick(source.file_path)}
+                        >
                             <FileOutlined className={styles.fileIcon} />
-                            <span className={styles.fileName}>{source}</span>
+                            <span className={styles.fileName}>{source.file_path}</span>
                         </div>
                     ))
                 ) : (

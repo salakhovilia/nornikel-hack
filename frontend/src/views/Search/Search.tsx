@@ -4,31 +4,12 @@ import UserInput from '@components/UserInput/UserInput';
 import QuestionBlock from '@components/QuestionBlock/QuestionBlock';
 import Sources from '@components/Sources/Sources';
 import { v4 as uuidv4 } from 'uuid';
-import { mockAnswers } from '@mock/answers';
-
-type Payload = {
-    total_pages: number;
-    file_path: string;
-    source: string;
-    text: string;
-    docId: string;
-};
-
-type ResponseItem = {
-    id: string;
-    version: number;
-    score: number;
-    payload: Payload;
-    vector: unknown;
-    shard_key: unknown;
-    order_value: unknown;
-};
+import { Question, Source } from '@domains/question';
+import { QueryResponse } from '@domains/api';
 
 function Search() {
     const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
-    const [questions, setQuestions] = useState<
-        { id: string; question: string; answer: string; isLoading: boolean; sources: string[] }[]
-    >(() => {
+    const [questions, setQuestions] = useState<Question[]>(() => {
         const savedQuestions = localStorage.getItem('questions');
         return savedQuestions ? JSON.parse(savedQuestions) : [];
     });
@@ -37,8 +18,6 @@ function Search() {
     useEffect(() => {
         localStorage.setItem('questions', JSON.stringify(questions));
     }, [questions]);
-
-    console.log('Questions: ', questions);
 
     const handleBlockClick = (id: string) => {
         setActiveQuestionId(activeQuestionId === id ? null : id);
@@ -50,21 +29,19 @@ function Search() {
         setIsAnswering(true);
         const questionId = uuidv4();
 
-        const randomAnswer = mockAnswers[Math.floor(Math.random() * mockAnswers.length)];
-
-        const newQuestion = {
+        const newQuestion: Question = {
             id: questionId,
             question: userQuestion,
             answer: 'Ответ с сервера',
             isLoading: true,
-            sources: randomAnswer.sources,
+            sources: null,
         };
 
         setQuestions((prev) => [newQuestion, ...prev]);
         setActiveQuestionId(questionId);
 
         try {
-            const response = await fetch('http://localhost:8000/api/query', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/query`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -75,18 +52,24 @@ function Search() {
                 }),
             });
             if (response.ok) {
-                const data = await response.json();
+                const data: QueryResponse = await response.json();
 
-                const filePathsSet = new Set<string>();
+                const uniqueSourcesSet = new Map<string, Source>();
 
-                data.response.forEach((item: ResponseItem) => {
+                data.sources.forEach((item) => {
                     if (item.payload && item.payload.file_path && item.payload.docId) {
                         const modifiedPath = item.payload.file_path.replace(`uploads/${item.payload.docId}_`, '');
-                        filePathsSet.add(modifiedPath);
+                        const source: Source = {
+                            file_path: modifiedPath,
+                            docID: item.payload.docId,
+                        };
+                        uniqueSourcesSet.set(item.payload.docId, source);
                     }
                 });
 
-                const uniqueSources = [...filePathsSet];
+                console.log(uniqueSourcesSet);
+
+                const uniqueSources = Array.from(uniqueSourcesSet.values());
 
                 setQuestions((prev) =>
                     prev.map((q) =>
@@ -127,7 +110,7 @@ function Search() {
             </div>
             <Sources
                 question={activeQuestion?.question || null}
-                sources={activeQuestion?.sources || []}
+                sources={activeQuestion?.sources || null}
                 isLoading={isAnswering}
             />
         </div>
