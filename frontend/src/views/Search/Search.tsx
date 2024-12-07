@@ -1,45 +1,90 @@
-import React, { useState } from 'react';
-import { Document, Page } from 'react-pdf';
+import React, { useState, useEffect } from 'react';
 import styles from './Search.module.scss';
 import UserInput from '@components/UserInput/UserInput';
-import { FileOutlined } from '@ant-design/icons';
-import { fileList } from '@mock/fileList';
-import ExamplePDF from '@assets/example.pdf';
+import QuestionBlock from '@components/QuestionBlock/QuestionBlock';
+import Sources from '@components/Sources/Sources';
+import { v4 as uuidv4 } from 'uuid';
+import { mockAnswers } from '@mock/answers';
 
 function Search() {
-    const [numPages, setNumPages] = useState<number>(0);
+    const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
+    const [questions, setQuestions] = useState<
+        { id: string; question: string; answer: string; isLoading: boolean; sources: string[] }[]
+    >(() => {
+        const savedQuestions = localStorage.getItem('questions');
+        return savedQuestions ? JSON.parse(savedQuestions) : [];
+    });
+    const [isAnswering, setIsAnswering] = useState(false);
 
-    const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-        setNumPages(numPages);
+    useEffect(() => {
+        localStorage.setItem('questions', JSON.stringify(questions));
+    }, [questions]);
+
+    const handleBlockClick = (id: string) => {
+        setActiveQuestionId(activeQuestionId === id ? null : id);
     };
+
+    const handleUserQuestion = (userQuestion: string) => {
+        if (isAnswering) return;
+
+        setIsAnswering(true);
+        const questionId = uuidv4();
+
+        const randomAnswer = mockAnswers[Math.floor(Math.random() * mockAnswers.length)];
+
+        const newQuestion = {
+            id: questionId,
+            question: userQuestion,
+            answer: '',
+            isLoading: true,
+            sources: randomAnswer.sources,
+        };
+
+        setQuestions((prev) => [newQuestion, ...prev]);
+        setActiveQuestionId(questionId);
+
+        const randomDelay = Math.floor(Math.random() * 4000) + 1000;
+
+        setTimeout(() => {
+            setQuestions((prev) =>
+                prev.map((q) =>
+                    q.id === questionId
+                        ? {
+                              ...q,
+                              isLoading: false,
+                              answer: randomAnswer.answer,
+                          }
+                        : q,
+                ),
+            );
+            setIsAnswering(false);
+        }, randomDelay);
+    };
+
+    const activeQuestion = questions.find((q) => q.id === activeQuestionId);
 
     return (
         <div className={styles.searchLayout}>
             <div className={styles.searchWindow}>
-                <UserInput />
-                <div className={styles.main}>
-                    <div className={styles.pdfViewer}>
-                        <Document file={ExamplePDF} onLoadSuccess={onDocumentLoadSuccess}>
-                            {Array.from(new Array(numPages), (_, index) => (
-                                <Page key={index} pageNumber={index + 1} />
-                            ))}
-                        </Document>
-                    </div>
-                </div>
-            </div>
-            <div className={styles.fileSidebar}>
-                <div className={styles.title}>
-                    <span className={styles.fileSidebarTitle}>Источники</span>
-                </div>
-                <div className={styles.fileList}>
-                    {fileList.map((file) => (
-                        <div key={file.name} className={styles.fileItem}>
-                            <FileOutlined className={styles.fileIcon} />
-                            <span className={styles.fileName}>{file.name}</span>
-                        </div>
+                <UserInput onSubmit={handleUserQuestion} disabled={isAnswering} />
+                <div className={styles.questionSection}>
+                    {questions.map((q) => (
+                        <QuestionBlock
+                            key={q.id}
+                            question={q.question}
+                            answer={q.answer}
+                            isActive={activeQuestionId === q.id}
+                            isLoading={q.isLoading}
+                            onClick={() => handleBlockClick(q.id)}
+                        />
                     ))}
                 </div>
             </div>
+            <Sources
+                question={activeQuestion?.question || null}
+                sources={activeQuestion?.sources || null}
+                isLoading={isAnswering}
+            />
         </div>
     );
 }

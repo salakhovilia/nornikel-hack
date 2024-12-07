@@ -20,7 +20,8 @@
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-pdf": "^9.1.1",
-        "react-router-dom": "^6.28.0"
+        "react-router-dom": "^6.28.0",
+        "uuid": "^11.0.3"
     },
     "devDependencies": {
         "@reduxjs/toolkit": "^2.3.0",
