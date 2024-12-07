@@ -1,53 +1,46 @@
-import React, { useState } from 'react';
-import { Upload, Button, message, Spin } from 'antd';
+import React from 'react';
+import { Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { Viewer, Worker } from '@react-pdf-viewer/core';
-import { openPlugin } from '@react-pdf-viewer/open';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import styles from './Upload.module.scss';
+import axios from 'axios';
 
 const UploadPage: React.FC = () => {
-    const [file, setFile] = useState<File | null>(null);
-    const [loading, setLoading] = useState<boolean>(false); // Для индикатора загрузки
-    const openPluginInstance = openPlugin();
+    const handleUpload = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('meta', JSON.stringify({ name: file.name }));
 
-    const handleFileChange = (file: any) => {
-        setLoading(true);
-        setFile(file as File);
-    };
-
-    const beforeUpload = (file: File) => {
-        const isPdf = file.type === 'application/pdf';
-        if (!isPdf) {
-            message.error('Пожалуйста, загрузите PDF файл.');
+        try {
+            console.log('Отправка файла...');
+            const response = await axios.post('http://localhost:8000/api/files', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log('Ответ от сервера:', response);
+            if (response.status === 200) {
+                message.success('Файл успешно загружен');
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке:', error);
+            message.error('Ошибка при загрузке файла');
         }
-        return isPdf;
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.uploadSection}>
-                <Upload
-                    accept=".pdf"
-                    beforeUpload={(file) => {
-                        return beforeUpload(file as File) && !file;
-                    }}
-                    showUploadList={false}
-                    onChange={({ file }) => handleFileChange(file as unknown as File)}
-                >
-                    <Button icon={<UploadOutlined />}>Выберите PDF файл</Button>
-                </Upload>
-            </div>
-
-            {loading && !file && <Spin tip="Загрузка..." className={styles.loader} />}
-
-            {file && (
-                <div className={styles.pdfViewer}>
-                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.6.347/build/pdf.worker.min.js" />
-                    <Viewer fileUrl={URL.createObjectURL(file)} plugins={[openPluginInstance]} />
-                </div>
-            )}
+        <div>
+            <Upload
+                customRequest={({ file, onSuccess, onError }) => {
+                    console.log('Файл:', file);
+                    handleUpload(file as File)
+                        .then(() => {
+                            onSuccess && onSuccess({});
+                        })
+                        .catch(onError);
+                }}
+                showUploadList={false}
+            >
+                <Button icon={<UploadOutlined />}>Загрузить файл</Button>
+            </Upload>
         </div>
     );
 };
