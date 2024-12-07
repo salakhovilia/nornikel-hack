@@ -5,7 +5,7 @@ MODEL_NAME = "vidore/colqwen2-v0.1"
 
 device = "cpu"
 if torch.cuda.is_available():
-    device = "gpu"
+    device = "cuda:0"
 
 ColPaliModel = ColQwen2.from_pretrained(
     MODEL_NAME, torch_dtype=torch.bfloat16, device_map=device, offload_folder=".offload"
