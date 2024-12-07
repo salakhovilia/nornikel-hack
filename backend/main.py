@@ -1,9 +1,12 @@
 import os
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
+
+from base.db import vector_store, COLLECTION_NAME
 
 load_dotenv()
 
@@ -29,7 +32,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.agent_service import AgentService
 
 
-app = FastAPI(root_path="/api", docs_url="/docs")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await vector_store._acreate_collection(COLLECTION_NAME, 128)
+    yield
+
+
+app = FastAPI(root_path="/api", docs_url="/docs", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +48,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 logger = logging.getLogger(__name__)
@@ -71,7 +81,7 @@ async def add_file(file: UploadFile, meta: Annotated[str, Form()]):
         logger.warning(f"Extension {extension} is not supported")
         return
 
-    id = uuid.uuid4()
+    id = str(uuid.uuid4())
     file_path = f"uploads/{id}_{file.filename}"
     async with aiofiles.open(file_path, "wb") as f:
         while content := await file.read(1000000):

@@ -1,29 +1,15 @@
 import logging
-from typing import List, Any
+import uuid
 
-from llama_index.core import SimpleDirectoryReader, Settings
-from llama_index.core.llms import ChatMessage, MessageRole
-from llama_index.core.query_pipeline import InputComponent, QueryPipeline
+from llama_index.core import SimpleDirectoryReader
+from qdrant_client import models
 
-from llama_index.core.types import BaseModel
-
-from pydantic.v1 import Field
-
-from base.db import index
+from base.db import aclient, COLLECTION_NAME
 from base.text_ingestor import TextIngestionPipeline
+from model import ColPaliProcessor, ColPaliModel
 from pdf_reader import PdfColPaliReader
 
 FILE_EXTRACTOR = {"pdf": PdfColPaliReader()}
-
-
-class Query(BaseModel):
-    """Data model for an answer."""
-
-    score: int = Field(description="the score from 1 to 10 CoWorker was mentioned")
-    relevance: int = Field(
-        description="the score from 1 to 10 the correctness, useful and relevance of the answer"
-    )
-    message: str
 
 
 logger = logging.getLogger(__name__)
@@ -46,8 +32,29 @@ class AgentService:
         if extension in FILE_EXTRACTOR:
             docs = await FILE_EXTRACTOR[extension].aload_data(file_path)
 
-            for doc in docs:
-                index.insert(doc)
+            points = []
+            for i, doc in enumerate(docs):
+                points.append(
+                    models.PointStruct(
+                        id=str(uuid.uuid4()),
+                        # vector=[
+                        #     {
+                        #         # SPARSE_VECTOR_NAME: SparseVector(
+                        #         #     indices=sparse_indices[0],
+                        #         #     values=sparse_vectors[0],
+                        #         # ),
+                        #         DENSE_VECTOR_NAME: doc["embedding"],
+                        #     },
+                        # ],
+                        vector=doc["embedding"],
+                        payload={**doc["extra_info"], "text": doc["text"], "docId": id},
+                    )
+                )
+
+            await aclient.upsert(
+                COLLECTION_NAME,
+                points=points,
+            ),
 
         else:
             reader = SimpleDirectoryReader(input_files=[file_path])
@@ -56,112 +63,24 @@ class AgentService:
             await TextIngestionPipeline.arun(documents=files)
 
     async def query(self, question: str, meta: dict):
-        # llm = OpenAI(model="gpt-4o", temperature=0.5)
-        #
-        # filters = MetadataFilters(
-        #     filters=[
-        #         MetadataFilter(key="companyId", value=companyId, operator="=="),
-        #         MetadataFilter(key="role", value="assistant", operator="!="),
-        #     ],
-        # )
+        batch_query = ColPaliProcessor.process_queries([question]).to(
+            ColPaliModel.device
+        )
+        query_embedding = ColPaliModel(**batch_query)
 
-        retriever = index.as_retriever(similarity_top_k=10)
-        # messages = await self.get_last_messages(companyId, meta.get("chatId"), 25)
-
-        # p = QueryPipeline(verbose=True)
-        # p.add_modules(
-        #     {
-        #         "input": InputComponent(),
-        #         "retriever": retriever,
-        #         # "post_processor": SimilarityPostprocessor(similarity_cutoff=0.75),
-        #         # "response": ResponseWithChatHistory(
-        #         #     llm=llm,
-        #         #     system_prompt=SYSTEM_PROMPT,
-        #         #     context_prompt=USER_QUERY_PROMPT,
-        #         # ),
-        #     }
-        # )
-        # p.add_link("input", "retriever", src_key="query_str")
-        # p.add_link("retriever", "post_processor", dest_key="nodes")
-        # p.add_link("post_processor", "response", dest_key="nodes")
-        # p.add_link("input", "response", src_key="query_str", dest_key="query_str")
-        # p.add_link("input", "response", src_key="chat_history", dest_key="chat_history")
-
-        # response = await p.arun(
-        #     query_str=await self.format_query(question, meta),
-        #     # chat_history=await self.convert_messages(messages),
-        # )
-
-        response = await retriever.aretrieve(question)
-
-        return response
-
-    async def convert_messages(self, messages):
-        chat_history: List[ChatMessage] = []
-
-        for message in messages:
-            content = ""
-            for key in message[1]:
-                if key.startswith("_"):
-                    continue
-
-                content += f"{key}: {message[1][key]}\n"
-            content += f"\n{message[0]}"
-
-            chat_history.append(
-                ChatMessage(
-                    content=content,
-                    role=(
-                        MessageRole.ASSISTANT
-                        if message[1].get("role") == "assistant"
-                        else MessageRole.USER
-                    ),
+        multivector_query = query_embedding[0].cpu().float().numpy().tolist()
+        search_result = await aclient.query_points(
+            collection_name=COLLECTION_NAME,
+            query=multivector_query,
+            limit=10,
+            timeout=100,
+            search_params=models.SearchParams(
+                quantization=models.QuantizationSearchParams(
+                    ignore=False,
+                    rescore=True,
+                    oversampling=2.0,
                 )
-            )
+            ),
+        )
 
-        return chat_history
-
-    async def format_messages(self, messages):
-        messages_str = "Context:\n\n"
-
-        for message in messages:
-            for key in message[1]:
-                if key.startswith("_"):
-                    continue
-
-                messages_str += f"{key}: {message[1][key]}\n"
-            messages_str += f"\n{message[0]}\n\n"
-
-        return messages_str
-
-    async def format_calendars(self, calendars):
-        calendars_str = ""
-
-        for calendar in calendars:
-            for key in calendar.model_fields_set:
-                calendars_str += f"{key}: {getattr(calendar, key)}\n"
-            calendars_str += "\n"
-
-        return calendars_str
-
-    async def format_events(self, events):
-        events_str = ""
-
-        for event in events:
-            for key in event.model_fields_set:
-                events_str += f"{key}: {getattr(event, key)}\n"
-            events_str += "\n"
-
-        return events_str
-
-    async def format_query(self, query: str, meta: dict[str, Any]):
-        query_str = ""
-
-        for key in meta:
-            if key.startswith("_"):
-                continue
-
-            query_str += f"{key}: {meta[key]}\n"
-        query_str += f"\n{query}\n\n"
-
-        return query_str
+        return search_result.points

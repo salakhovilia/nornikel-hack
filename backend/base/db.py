@@ -1,41 +1,49 @@
-import os
-import sys
-
+import qdrant_client
 from llama_index.core import VectorStoreIndex
-from llama_index.vector_stores.postgres import PGVectorStore
-from psycopg_pool import AsyncConnectionPool
-from sqlalchemy import make_url
+from llama_index.vector_stores.qdrant import QdrantVectorStore
+from qdrant_client.http import models
 
 from embedding import ColPaliEmbedding
 from model import ColPaliModel, ColPaliProcessor
 
-url = make_url(os.environ.get("DOCUMENT_DATABASE_URL"))
 
-
-def reconnect_failed():
-    sys.exit(1)
-
-
-pool = AsyncConnectionPool(
-    os.environ.get("DOCUMENT_DATABASE_URL"),
-    open=False,
-    reconnect_failed=reconnect_failed,
+aclient = qdrant_client.AsyncQdrantClient(
+    host="localhost",
+    port=6333,
 )
 
-vector_store = PGVectorStore.from_params(
-    database=url.database,
-    host=url.host,
-    password=url.password,
-    port=url.port,
-    user=url.username,
-    table_name="documents",
-    embed_dim=3456,
+client = qdrant_client.QdrantClient(
+    host="localhost",
+    port=6333,
 )
 
+COLLECTION_NAME = "documents"
+
+vector_store = QdrantVectorStore(
+    client=client,
+    aclient=aclient,
+    collection_name=COLLECTION_NAME,
+    dense_config=models.VectorParams(
+        size=128,
+        distance=models.Distance.COSINE,
+        on_disk=True,  # move original vectors to disk
+        multivector_config=models.MultiVectorConfig(
+            comparator=models.MultiVectorComparator.MAX_SIM
+        ),
+        quantization_config=models.BinaryQuantization(
+            binary=models.BinaryQuantizationConfig(
+                always_ram=True  # keep only quantized vectors in RAM
+            ),
+        ),
+    ),
+    quantization_config=models.BinaryQuantization(
+        binary=models.BinaryQuantizationConfig(
+            always_ram=True  # keep only quantized vectors in RAM
+        ),
+    ),
+)
 
 index = VectorStoreIndex.from_vector_store(
     vector_store=vector_store,
     embed_model=ColPaliEmbedding(ColPaliModel, ColPaliProcessor),
 )
-
-query_engine = index.as_query_engine()

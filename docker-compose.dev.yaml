@@ -1,21 +1,13 @@
 services:
-  db:
-    image: pgvector/pgvector:0.8.0-pg15
+  qdrant:
+    image: qdrant/qdrant
     restart: always
-    user: postgres
     volumes:
-      - db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=nornikel
-      - POSTGRES_USER=docs
-      - POSTGRES_PASSWORD=docs
+      - qdrant-data:/qdrant/storage
     ports:
-      - 5432:5432
-    healthcheck:
-      test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - 6333:6333
+      - 6334:6334
+
 
 volumes:
-  db-data:
+  qdrant-data:

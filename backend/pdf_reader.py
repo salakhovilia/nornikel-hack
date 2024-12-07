@@ -1,4 +1,3 @@
-import io
 import logging
 from pathlib import Path
 from typing import List, Optional, Dict
@@ -9,7 +8,6 @@ from fsspec import AbstractFileSystem
 from llama_index.core import Document
 from llama_index.core.readers.base import BaseReader
 
-from sklearn.decomposition import PCA
 
 from model import ColPaliProcessor, ColPaliModel
 
@@ -57,24 +55,24 @@ class PdfColPaliReader(BaseReader):
             print(page, (pix.width, pix.height))
 
             image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-            image = image.resize((100, 100))
+            image = image.resize((448, 448))
             processed_img = ColPaliProcessor.process_images([image])
 
             embeddings = ColPaliModel(**processed_img)
 
-            embeddings_list = list(embeddings.float().numpy()[0].flatten())
+            embeddings_list = list(embeddings.cpu().float().numpy()[0].tolist())
 
             docs.append(
-                Document(
-                    text=page.get_text().encode("utf-8"),
-                    embedding=embeddings_list,
-                    extra_info=dict(
+                {
+                    "text": page.get_text(),
+                    "embedding": embeddings_list,
+                    "extra_info": dict(
                         extra_info,
                         **{
                             "source": f"{page.number + 1}",
                         },
                     ),
-                )
+                }
             )
 
         return docs
