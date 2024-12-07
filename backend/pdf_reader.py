@@ -9,7 +9,7 @@ from llama_index.core import Document
 from llama_index.core.readers.base import BaseReader
 
 
-from model import ColPaliProcessor, ColPaliModel
+from model import ColPaliProcessor, ColPaliModel, answer
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +64,27 @@ class PdfColPaliReader(BaseReader):
 
             embeddings_list = list(embeddings.cpu().float().numpy()[0].tolist())
 
+            text = answer(
+                [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "image": image,
+                            },
+                            {
+                                "type": "text",
+                                "text": f"Describe what is in the provided image and consider and rely on the text extracted from the image. \n\nExtracted text: {page.get_text()}",
+                            },
+                        ],
+                    }
+                ]
+            )
+
             docs.append(
                 {
-                    "text": page.get_text(),
+                    "text": text,
                     "embedding": embeddings_list,
                     "extra_info": dict(
                         extra_info,

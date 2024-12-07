@@ -2,6 +2,7 @@ from typing import List
 
 import torch
 from colpali_engine import ColQwen2, ColQwen2Processor, ColPali, ColPaliProcessor
+from qwen_vl_utils import process_vision_info
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 
 
@@ -36,3 +37,32 @@ def generate_embedding(text: str) -> List[List[float]]:
     embeddings = ColPaliModel(**processed_query)
 
     return embeddings.cpu().float().numpy()[0].tolist()
+
+
+def answer(messages):
+    text = GenProcessor.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+
+    image_inputs, video_inputs = process_vision_info(messages)
+    inputs = GenProcessor(
+        text=[text],
+        images=image_inputs,
+        videos=video_inputs,
+        padding=True,
+        return_tensors="pt",
+    )
+    inputs = inputs.to(GenModel.device)
+
+    generated_ids = GenModel.generate(**inputs)
+    generated_ids_trimmed = [
+        out_ids[len(in_ids) :]
+        for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+    ]
+    output_text = GenProcessor.batch_decode(
+        generated_ids_trimmed,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+    )
+
+    return output_text
