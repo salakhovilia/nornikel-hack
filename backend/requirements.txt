@@ -8,6 +8,7 @@ anyio==4.7.0
 async-timeout==5.0.1
 asyncpg==0.29.0
 attrs==24.2.0
+av==14.0.1
 beautifulsoup4==4.12.3
 black==24.10.0
 certifi==2024.8.30
@@ -20,6 +21,7 @@ Deprecated==1.2.15
 dirtyjson==1.0.8
 distro==1.9.0
 dnspython==2.7.0
+docx2txt==0.8
 email_validator==2.2.0
 fastapi==0.115.6
 fastapi-cli==0.0.6
@@ -65,6 +67,7 @@ llama-index-vector-stores-postgres==0.3.2
 llama-index-vector-stores-qdrant==0.4.0
 llama-parse==0.5.17
 loguru==0.7.3
+lxml==5.3.0
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 marshmallow==3.23.1
@@ -101,9 +104,11 @@ pypdf==5.1.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-multipart==0.0.19
+python-pptx==1.0.2
 pytz==2024.2
 PyYAML==6.0.2
 qdrant-client==1.12.1
+qwen-vl-utils==0.0.8
 regex==2024.11.6
 requests==2.32.3
 rich==13.9.4
@@ -125,6 +130,7 @@ tiktoken==0.8.0
 tokenizers==0.20.3
 toml==0.10.2
 torch==2.5.1
+torchvision==0.20.1
 tqdm==4.67.1
 transformers==4.46.3
 typer==0.15.1
@@ -137,4 +143,5 @@ uvloop==0.21.0
 watchfiles==1.0.0
 websockets==14.1
 wrapt==1.17.0
+XlsxWriter==3.2.0
 yarl==1.18.3

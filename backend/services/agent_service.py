@@ -6,6 +6,7 @@ from PIL import Image
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
 from qdrant_client import models
+from qdrant_client.http.models import Filter
 
 from base.db import aclient, COLLECTION_NAME
 from model import (
@@ -131,4 +132,4 @@ class AgentService:
         }
 
     async def reindex(self):
-        await aclient.delete(COLLECTION_NAME, "*")
+        await aclient.delete(COLLECTION_NAME, Filter())
