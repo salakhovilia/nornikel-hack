@@ -1,10 +1,10 @@
 import logging
 import uuid
 
-from llama_index.core import SimpleDirectoryReader
+from llama_index.core import SimpleDirectoryReader, Document
 from qdrant_client import models
 
-from base.db import aclient, COLLECTION_NAME
+from base.db import aclient, COLLECTION_NAME, vector_store, index
 from base.text_ingestor import TextIngestionPipeline
 from model import ColPaliProcessor, ColPaliModel
 from pdf_reader import PdfColPaliReader
@@ -55,7 +55,6 @@ class AgentService:
                 COLLECTION_NAME,
                 points=points,
             ),
-
         else:
             reader = SimpleDirectoryReader(input_files=[file_path])
             files = await reader.aload_data(show_progress=True)

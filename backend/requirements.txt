@@ -92,11 +92,6 @@ portalocker==2.10.1
 propcache==0.2.1
 protobuf==5.29.1
 psutil==6.1.0
-psycopg==3.2.3
-psycopg-binary==3.2.3
-psycopg-pool==3.2.4
-psycopg2==2.9.10
-psycopg2-binary==2.9.10
 py_rust_stemmers==0.1.3
 pydantic==2.9.2
 pydantic_core==2.23.4
