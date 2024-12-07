@@ -1,0 +1,52 @@
+.header {
+    background: #1890ff;
+    color: white;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.breadcrumbContainer {
+    display: flex;
+    flex-direction: column;
+
+    .separator {
+        color: #eaeaea !important;
+    }
+
+}
+
+.breadcrumb {
+    margin-bottom: 4px;
+    font-size: 18px;
+    font-weight: bold;
+
+    .ant-breadcrumb-link,
+    .ant-breadcrumb-item,
+    .ant-breadcrumb-separator {
+        color: white !important;
+    }
+
+    a {
+        color: white !important;
+        text-decoration: none;
+
+        &:hover {
+            color: white !important;
+        }
+
+        &:focus {
+            color: white !important;
+        }
+    }
+
+    span {
+        color: white !important;
+    }
+
+    .ant-breadcrumb-separator {
+        color: white !important;
+    }
+}
+

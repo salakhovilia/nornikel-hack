@@ -1,0 +1,16 @@
+print() {
+    GreenColor="\033[1;32m"
+    ResetColor="\033[0m"
+    Input=$1
+
+    echo "$GreenColor$Input$ResetColor"
+}
+
+print "[PRE-COMMIT]: linting staged code 🧹"
+npm run lint-staged
+
+print "[PRE-COMMIT]: running type check ⏳"
+npm run type-check
+
+print "[PRE-COMMIT]: running build 🛠️"
+npm run build

@@ -1,0 +1,39 @@
+.app {
+    height: 100vh;
+}
+
+.sidebar {
+    background: #001529;
+}
+
+.sidebarToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    width: 80px;
+    background: #001529;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: background 0.3s, transform 0.3s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.icon {
+    transform: rotate(90deg);
+    transition: transform 0.3s;
+}
+
+.sidebarToggle:active .icon {
+    transform: rotate(90deg) scale(0.95);
+}
+
+.content {
+    padding: 16px;
+}
