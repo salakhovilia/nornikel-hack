@@ -5,7 +5,6 @@ import Sidebar from '@components/Sidebar/Sidebar';
 import Header from '@components/Header/Header';
 import styles from './App.module.scss';
 import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined } from '@ant-design/icons';
-import Settings from '@views/Settings/Settings';
 import Search from '@views/Search/Search';
 import Source from '@views/Source/Source';
 import Upload from '@views/Upload/Upload';
@@ -34,7 +33,6 @@ function App() {
                     <Content className={styles.content}>
                         <Routes>
                             <Route path="/search" element={<Search />} />
-                            <Route path="/settings" element={<Settings />} />
                             <Route path="/source" element={<Source />} />
                             <Route path="/upload" element={<Upload />} />
                         </Routes>

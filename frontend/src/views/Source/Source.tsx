@@ -1,43 +1,19 @@
-import React, { useState } from 'react';
-import { Document, Page } from 'react-pdf';
+import React from 'react';
+import { searchPlugin } from '@react-pdf-viewer/search';
+import { Viewer, Worker } from '@react-pdf-viewer/core';
+import testPdf from '@assets/example.pdf';
 import styles from './Source.module.scss';
-import examplePdf from '@assets/example.pdf';
-import { Spin } from 'antd';
 
 function Source() {
-    const [numPages, setNumPages] = useState<number | null>(null);
-
-    const handleLoadSuccess = ({ numPages }: { numPages: number }) => {
-        setNumPages(numPages);
-    };
+    const searchPluginInstance = searchPlugin({
+        keyword: ['Как', 'Промышленность'],
+    });
 
     return (
-        <div className={styles.source}>
+        <div className={styles.container}>
             <div className={styles.pdfViewer}>
-                <Document
-                    file={examplePdf}
-                    onLoadSuccess={handleLoadSuccess}
-                    onLoadError={(error) => {
-                        console.error('Ошибка загрузки документа:', error);
-                    }}
-                    loading={
-                        <div className={styles.loader}>
-                            <Spin size="large" />
-                        </div>
-                    }
-                >
-                    {numPages &&
-                        Array.from({ length: numPages }, (_, index) => (
-                            <div key={index} className={styles.pageContainer}>
-                                <Page
-                                    scale={1.2}
-                                    pageNumber={index + 1}
-                                    renderTextLayer={false}
-                                    renderAnnotationLayer={false}
-                                />
-                            </div>
-                        ))}
-                </Document>
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.6.347/build/pdf.worker.min.js" />
+                <Viewer fileUrl={testPdf} plugins={[searchPluginInstance]} />
             </div>
         </div>
     );
