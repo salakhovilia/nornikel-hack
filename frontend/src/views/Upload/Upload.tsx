@@ -1,73 +1,106 @@
-import React, { useState } from 'react';
-import { UploadOutlined } from '@ant-design/icons';
-import { Button, Upload, Spin } from 'antd';
-import { RcFile } from 'antd/lib/upload';
+import React, { useState, useEffect } from 'react';
+import { Upload, Button, Input, message, Spin } from 'antd';
+import { UploadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Document, Page } from 'react-pdf';
+import { usePdfTextSearch } from '@hooks/usePdfSearch';
 import styles from './Upload.module.scss';
 
-function UploadPage() {
-    const [file, setFile] = useState<RcFile | null>(null);
-    const [numPages, setNumPages] = useState<number | null>(null);
-    const [containerWidth, setContainerWidth] = useState<number>(800);
+const UploadPage: React.FC = () => {
+    const [file, setFile] = useState<File | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [numPages, setNumPages] = useState<number>(0); // Число страниц для рендеринга
 
-    const handleFileUpload = (uploadedFile: RcFile) => {
-        setFile(uploadedFile);
+    const handleFileChange = (file: File) => {
+        setFile(file);
+        setSearchQuery('');
     };
 
-    const handleLoadSuccess = ({ numPages }: { numPages: number }) => {
-        setNumPages(numPages);
+    // Используем хук поиска текста, передавая `file` и `searchQuery`
+    const searchResults = usePdfTextSearch(file, searchQuery);
+
+    const customTextRenderer = (props: any) => {
+        const { str } = props;
+
+        if (!searchQuery) {
+            return str;
+        }
+
+        const regex = new RegExp(`(${searchQuery})`, 'gi');
+        const parts = str.split(regex);
+
+        return parts.map((part: string, index: number) =>
+            regex.test(part) ? (
+                <span key={index} className={styles.highlight}>
+                    {part}
+                </span>
+            ) : (
+                part
+            ),
+        );
     };
+
+    const onDocumentLoadSuccess = ({ numPages }: any) => {
+        setNumPages(numPages); // Получаем количество страниц и сохраняем в стейт
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        if (file) {
+            setLoading(true); // Начинаем загрузку, когда файл выбран
+        }
+    }, [file]);
 
     return (
-        <div className={styles.upload}>
-            <h1>Загрузка файлов</h1>
-            <p>Выберите PDF-документ для загрузки и просмотра.</p>
-
+        <div className={styles.container}>
             <Upload
-                accept=".pdf"
+                accept=".pdf,application/pdf"
                 beforeUpload={(file) => {
-                    handleFileUpload(file);
-                    return false;
+                    const isValid = file.type === 'application/pdf';
+                    if (isValid) {
+                        handleFileChange(file);
+                        return false; // Отключаем автоматическую загрузку
+                    } else {
+                        message.error('Пожалуйста, загрузите PDF файл.');
+                        return Upload.LIST_IGNORE;
+                    }
                 }}
                 showUploadList={false}
             >
-                <Button icon={<UploadOutlined />}>Выберите файл</Button>
+                <Button icon={<UploadOutlined />}>Выберите PDF файл</Button>
             </Upload>
 
             {file && (
-                <div
-                    className={styles.pdfViewer}
-                    ref={(ref) => {
-                        if (ref) {
-                            setContainerWidth(ref.offsetWidth);
-                        }
-                    }}
-                >
+                <div className={styles.pdfContainer}>
+                    <Input
+                        placeholder="Введите текст для поиска"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ margin: '20px 0', width: '300px' }}
+                        suffix={<SearchOutlined onClick={() => setSearchQuery(searchQuery)} />}
+                    />
+                    <div>
+                        <span>Результаты поиска: {searchResults.length}</span>
+                    </div>
+                    {loading && <Spin tip="Загрузка..." />}
                     <Document
                         file={file}
-                        loading={
-                            <div className={styles.loader}>
-                                <Spin size="large" />
-                            </div>
-                        }
-                        onLoadSuccess={handleLoadSuccess}
-                        onLoadError={(error) => console.error('Ошибка загрузки файла:', error)}
+                        onLoadSuccess={onDocumentLoadSuccess}
+                        onLoadError={(error) => message.error('Ошибка загрузки PDF')}
                     >
-                        {numPages &&
-                            Array.from({ length: numPages }, (_, index) => (
-                                <Page
-                                    key={index}
-                                    pageNumber={index + 1}
-                                    scale={containerWidth / 600}
-                                    renderTextLayer={false}
-                                    renderAnnotationLayer={false}
-                                />
-                            ))}
+                        {/* Рендерим все страницы */}
+                        {Array.from(new Array(numPages), (_, index) => (
+                            <Page
+                                key={`page_${index + 1}`}
+                                pageNumber={index + 1}
+                                customTextRenderer={customTextRenderer}
+                            />
+                        ))}
                     </Document>
                 </div>
             )}
         </div>
     );
-}
+};
 
 export default UploadPage;
