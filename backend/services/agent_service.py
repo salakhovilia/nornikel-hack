@@ -1,5 +1,7 @@
+import base64
 import logging
 import uuid
+from io import BytesIO
 
 import pymupdf
 from PIL import Image
@@ -95,13 +97,18 @@ class AgentService:
         image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
         image = image.resize((448, 448))
 
+        buffered = BytesIO()
+        image.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue())
+
         messages = [
             {
                 "role": "user",
                 "content": [
                     {
                         "type": "image",
-                        "image": image,
+                        "image": bytes("data:image/jpeg;base64,", encoding="utf-8")
+                        + img_str,
                     },
                     {"type": "text", "text": search_result.points[0].payload["text"]},
                     {
