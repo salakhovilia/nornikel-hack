@@ -54,7 +54,7 @@ def answer(messages):
     )
     inputs = inputs.to(GenModel.device)
 
-    generated_ids = GenModel.generate(**inputs)
+    generated_ids = GenModel.generate(**inputs, max_new_tokens=50)
     generated_ids_trimmed = [
         out_ids[len(in_ids) :]
         for in_ids, out_ids in zip(inputs.input_ids, generated_ids)

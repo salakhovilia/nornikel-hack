@@ -1,6 +1,7 @@
 import logging
 import uuid
 
+import aiofiles.os
 import pymupdf
 from PIL import Image
 from llama_index.core import SimpleDirectoryReader
@@ -132,4 +133,9 @@ class AgentService:
         }
 
     async def reindex(self):
-        await aclient.delete(COLLECTION_NAME, Filter())
+        files_paths = await aiofiles.os.listdir("uploads")
+
+        for ind, file in enumerate(files_paths):
+            await self.process_file(str(uuid.uuid4()), f"uploads/{file}", {})
+
+            logger.info(f"Processed {ind + 1}/{len(files_paths)}")
