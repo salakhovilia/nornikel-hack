@@ -97,7 +97,7 @@ async def add_file(
 
     meta = json.loads(meta)
 
-    background_tasks.add_task(agentService.process_file, id, file_path, meta)
+    await agentService.process_file(id, file_path, meta)
 
     return {"status": "ok"}
 
