@@ -4,11 +4,15 @@ import uuid
 import pymupdf
 from PIL import Image
 from llama_index.core import SimpleDirectoryReader
+from llama_index.core.node_parser import SentenceSplitter
 from qdrant_client import models
 
 from base.db import aclient, COLLECTION_NAME
-from base.text_ingestor import TextIngestionPipeline
-from model import ColPaliProcessor, ColPaliModel, GenProcessor, GenModel
+from model import (
+    GenProcessor,
+    GenModel,
+    generate_embedding,
+)
 from pdf_reader import PdfColPaliReader
 from qwen_vl_utils import process_vision_info
 
@@ -40,15 +44,6 @@ class AgentService:
                 points.append(
                     models.PointStruct(
                         id=str(uuid.uuid4()),
-                        # vector=[
-                        #     {
-                        #         # SPARSE_VECTOR_NAME: SparseVector(
-                        #         #     indices=sparse_indices[0],
-                        #         #     values=sparse_vectors[0],
-                        #         # ),
-                        #         DENSE_VECTOR_NAME: doc["embedding"],
-                        #     },
-                        # ],
                         vector=doc["embedding"],
                         payload={**doc["extra_info"], "text": doc["text"], "docId": id},
                     )
@@ -62,19 +57,29 @@ class AgentService:
             reader = SimpleDirectoryReader(input_files=[file_path])
             files = await reader.aload_data(show_progress=True)
 
-            await TextIngestionPipeline.arun(documents=files)
+            for file in files:
+                file.embedding = []
+
+            splitter = SentenceSplitter()
+            nodes = await splitter.aget_nodes_from_documents(documents=files)
+            points = []
+            for node in nodes:
+                points.append(
+                    models.PointStruct(
+                        id=str(uuid.uuid4()),
+                        vector=generate_embedding(node.get_content()),
+                        payload=node.metadata,
+                    )
+                )
+            await aclient.upsert(COLLECTION_NAME, points)
 
     async def query(self, question: str, meta: dict):
-        batch_query = ColPaliProcessor.process_queries([question]).to(
-            ColPaliModel.device
-        )
-        query_embedding = ColPaliModel(**batch_query)
+        multivector_query = generate_embedding(question)
 
-        multivector_query = query_embedding.cpu().float().numpy()[0].tolist()
         search_result = await aclient.query_points(
             collection_name=COLLECTION_NAME,
             query=multivector_query,
-            limit=10,
+            limit=7,
             timeout=100,
             search_params=models.SearchParams(
                 quantization=models.QuantizationSearchParams(
@@ -111,7 +116,7 @@ class AgentService:
                     {"type": "text", "text": text},
                     {
                         "type": "text",
-                        "text": f"Answer the question using the documents provided, which may contain the answer.\n\nQuestion: {question}",
+                        "text": f"Answer the question using the documents provided, which may contain the answer. answer in the language of the question asked. \n\nQuestion: {question}",
                     },
                 ],
             }

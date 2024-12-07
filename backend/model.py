@@ -1,6 +1,9 @@
+from typing import List
+
 import torch
 from colpali_engine import ColQwen2, ColQwen2Processor, ColPali, ColPaliProcessor
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+
 
 MODEL_NAME = "vidore/colpali-v1.1"
 
@@ -25,3 +28,11 @@ max_pixels = (
 GenProcessor = AutoProcessor.from_pretrained(
     "Qwen/Qwen2-VL-2B-Instruct", torch_dtype="auto"
 )
+
+
+def generate_embedding(text: str) -> List[List[float]]:
+    processed_query = ColPaliProcessor.process_queries([text]).to(ColPaliModel.device)
+
+    embeddings = ColPaliModel(**processed_query)
+
+    return embeddings.cpu().float().numpy()[0].tolist()

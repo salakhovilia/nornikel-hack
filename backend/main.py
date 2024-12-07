@@ -16,11 +16,9 @@ import mimetypes
 import uuid
 from typing import Annotated
 
-from embedding import ColPaliEmbedding
-from model import ColPaliModel, ColPaliProcessor
 from llama_index.core import Settings
 
-Settings.embed_model = ColPaliEmbedding(model=ColPaliModel, processor=ColPaliProcessor)
+Settings.embed_model = None
 Settings.llm = None
 
 import aiofiles

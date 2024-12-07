@@ -3,7 +3,6 @@ from llama_index.core import VectorStoreIndex
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client.http import models
 
-from embedding import ColPaliEmbedding
 from model import ColPaliModel, ColPaliProcessor
 
 
@@ -43,7 +42,6 @@ vector_store = QdrantVectorStore(
     ),
 )
 
-index = VectorStoreIndex.from_vector_store(
-    vector_store=vector_store,
-    embed_model=ColPaliEmbedding(ColPaliModel, ColPaliProcessor),
-)
+# index = VectorStoreIndex.from_vector_store(
+#     vector_store=vector_store,
+# )
