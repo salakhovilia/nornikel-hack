@@ -1,14 +1,12 @@
-import base64
 import logging
 import uuid
-from io import BytesIO
 
 import pymupdf
 from PIL import Image
-from llama_index.core import SimpleDirectoryReader, Document
+from llama_index.core import SimpleDirectoryReader
 from qdrant_client import models
 
-from base.db import aclient, COLLECTION_NAME, vector_store, index
+from base.db import aclient, COLLECTION_NAME
 from base.text_ingestor import TextIngestionPipeline
 from model import ColPaliProcessor, ColPaliModel, GenProcessor, GenModel
 from pdf_reader import PdfColPaliReader
@@ -97,10 +95,10 @@ class AgentService:
         image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
         image = image.resize((448, 448))
 
-        buffered = BytesIO()
-        image.save(buffered, format="JPEG")
-        img_str = base64.b64encode(buffered.getvalue())
-        img_bytes = f"data:image/jpeg;base64,{img_str}"
+        text = ""
+        for p in search_result.points:
+            text += p.payload["text"]
+            text += "\n"
 
         messages = [
             {
@@ -110,10 +108,10 @@ class AgentService:
                         "type": "image",
                         "image": image,
                     },
-                    {"type": "text", "text": search_result.points[0].payload["text"]},
+                    {"type": "text", "text": text},
                     {
                         "type": "text",
-                        "text": f"Answer the question using the images provided, which may contain the answer.\n\nQuestion: {question}",
+                        "text": f"Answer the question using the documents provided, which may contain the answer.\n\nQuestion: {question}",
                     },
                 ],
             }
