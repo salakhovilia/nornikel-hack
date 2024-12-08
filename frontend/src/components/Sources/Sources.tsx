@@ -14,10 +14,21 @@ type SourcesProps = {
 const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
     const navigate = useNavigate();
 
-    const handleSourceClick = (file_path: string, text: string) => {
+    const handleSourceClick = (file_path: string, text: string, keywords: string[]) => {
         const encodedText = encodeURIComponent(text);
         const encodedFilePath = encodeURIComponent(file_path);
-        navigate(`/source?file_path=${encodedFilePath}&text=${encodedText}`);
+        const encodedKeywords = encodeURIComponent(keywords.join(', '));
+
+        console.log('encodedText: ', encodedText);
+        console.log('encodedFilePath: ', encodedFilePath);
+        console.log('encodedKeywords: ', encodedKeywords);
+
+        console.log(
+            'Navigate to: ',
+            `/source?file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+        );
+
+        navigate(`/source?file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`);
     };
 
     return (
@@ -32,16 +43,16 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
                     </div>
                 ) : sources && sources.length > 0 ? (
                     sources.map((source, index) => {
-                        const fileName = source.file_path.split('_').slice(1).join('_'); // Убираем docId и 'uploads'
+                        const fileName = source.file_path.split('_').slice(1).join('_');
                         const { text, page, score } = source;
 
-                        const formattedScore = score.toFixed(1); // Форматируем score с 1 цифрой после запятой
+                        const formattedScore = score.toFixed(1);
 
                         return (
                             <div
                                 key={index}
                                 className={styles.fileItem}
-                                onClick={() => handleSourceClick(source.file_path, text)}
+                                onClick={() => handleSourceClick(source.file_path, text, source.keywords || [])}
                             >
                                 <FileOutlined className={styles.fileIcon} />
                                 <span className={styles.score}>{formattedScore}</span>

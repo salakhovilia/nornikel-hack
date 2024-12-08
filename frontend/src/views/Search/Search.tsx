@@ -63,6 +63,7 @@ function Search() {
                                 score: item.score,
                                 page: item.payload.source,
                                 text: item.payload.text,
+                                keywords: userQuestion.split(' '), // Извлекаем ключевые слова
                             };
                             return source;
                         }

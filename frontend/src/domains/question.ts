@@ -5,6 +5,7 @@ export type Source = {
     page: string;
     score: number;
     text: string;
+    keywords: string[];
 };
 
 export type Question = {

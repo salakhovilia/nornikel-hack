@@ -9,11 +9,21 @@ function Source() {
     const queryParams = new URLSearchParams(location.search);
     const file_path = queryParams.get('file_path');
     const text = queryParams.get('text');
+    const keywordsParam = queryParams.get('keywords');
+
+    const keywords = keywordsParam ? keywordsParam.split(', ') : [];
 
     const pdfUrl = `${import.meta.env.VITE_API_URL}/${file_path}`;
 
+    console.log('queryParams: ', queryParams);
+    console.log('file_path: ', file_path);
+    console.log('text: ', text);
+    console.log('keywordsParam: ', keywordsParam);
+    console.log('keywords: ', keywords);
+    console.log('pdfUrl: ', pdfUrl);
+
     const searchPluginInstance = searchPlugin({
-        keyword: text?.split('') || '',
+        keyword: keywords.length > 0 ? keywords : text ? [text] : [],
     });
 
     return (
