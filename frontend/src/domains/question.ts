@@ -1,6 +1,11 @@
 export type Source = {
     file_path: string;
-    docID: string;
+    docId: string;
+    // source
+    page: string;
+    score: number;
+    text: string;
+    keywords: string[];
 };
 
 export type Question = {
