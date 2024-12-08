@@ -14,25 +14,22 @@ type SourcesProps = {
 const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
     const navigate = useNavigate();
 
-    const handleSourceClick = (file_path: string, text: string, keywords: string[]) => {
-        const file_name = file_path.split('_').slice(1).join('_');
+    const handleSourceClick = (docId: string, file_path: string, text: string, keywords: string[], page: string) => {
+        const fileName = file_path.replace(/^uploads\/(?:[^/]+\/)?/, '');
 
         const encodedText = encodeURIComponent(text);
         const encodedFilePath = encodeURIComponent(file_path);
-        const encodedFileName = encodeURIComponent(file_name);
+        const encodedFileName = encodeURIComponent(fileName);
+        const encodedFilPage = encodeURIComponent(page);
         const encodedKeywords = encodeURIComponent(keywords.join(', '));
-
-        console.log('encodedText: ', encodedText);
-        console.log('encodedFilePath: ', encodedFilePath);
-        console.log('encodedKeywords: ', encodedKeywords);
 
         console.log(
             'Navigate to: ',
-            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}&page=${encodedFilPage}`,
         );
 
         navigate(
-            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}&page=${encodedFilPage}`,
         );
     };
 
@@ -48,7 +45,7 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
                     </div>
                 ) : sources && sources.length > 0 ? (
                     sources.map((source, index) => {
-                        const fileName = source.file_path.split('_').slice(1).join('_');
+                        const fileName = source.file_path.replace(/^uploads\/(?:[^/]+\/)?/, '');
                         const { text, page, score } = source;
 
                         const formattedScore = score.toFixed(1);
@@ -57,7 +54,9 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
                             <div
                                 key={index}
                                 className={styles.fileItem}
-                                onClick={() => handleSourceClick(source.file_path, text, source.keywords || [])}
+                                onClick={() =>
+                                    handleSourceClick(source.docId, source.file_path, text, source.keywords || [], page)
+                                }
                             >
                                 <FileOutlined className={styles.fileIcon} />
                                 <span className={styles.score}>{formattedScore}</span>
