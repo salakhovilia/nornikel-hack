@@ -101,7 +101,11 @@ class AgentService:
         )
 
         image = None
-        if len(search_result.points):
+        if (
+            len(search_result.points)
+            and search_result.points[0].payload.get("file_path") is not None
+            and search_result.points[0].payload.get("source") is not None
+        ):
             path = search_result.points[0].payload["file_path"]
             index = int(search_result.points[0].payload["source"]) - 1
 
