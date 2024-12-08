@@ -7,17 +7,13 @@ from PIL import Image
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
 from qdrant_client import models
-from qdrant_client.http.models import Filter
 
 from base.db import aclient, COLLECTION_NAME
 from model import (
-    GenProcessor,
-    GenModel,
     generate_embedding,
     answer,
 )
 from pdf_reader import PdfColPaliReader
-from qwen_vl_utils import process_vision_info
 
 FILE_EXTRACTOR = {"pdf": PdfColPaliReader()}
 
@@ -25,6 +21,12 @@ FILE_EXTRACTOR = {"pdf": PdfColPaliReader()}
 logger = logging.getLogger(__name__)
 
 VISUAL_DOCS_EXTS = ["pdf"]
+
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx : min(ndx + n, l)]
 
 
 class AgentService:
@@ -64,20 +66,25 @@ class AgentService:
                 file.embedding = []
 
             splitter = SentenceSplitter()
-            nodes = await splitter.aget_nodes_from_documents(documents=files)
-            points = []
-            for node in nodes:
-                points.append(
-                    models.PointStruct(
-                        id=str(uuid.uuid4()),
-                        vector=generate_embedding(node.get_content()),
-                        payload=node.metadata,
+            nodes = await splitter.aget_nodes_from_documents(
+                documents=files, show_progress=True
+            )
+
+            for batch_nodes in batch(nodes, 5):
+                points = []
+
+                for node in batch_nodes:
+                    points.append(
+                        models.PointStruct(
+                            id=str(uuid.uuid4()),
+                            vector=await generate_embedding(node.get_content()),
+                            payload={**node.metadata},
+                        )
                     )
-                )
-            await aclient.upsert(COLLECTION_NAME, points)
+                await aclient.upsert(COLLECTION_NAME, points=points)
 
     async def query(self, question: str, meta: dict):
-        multivector_query = generate_embedding(question)
+        multivector_query = await generate_embedding(question)
 
         search_result = await aclient.query_points(
             collection_name=COLLECTION_NAME,

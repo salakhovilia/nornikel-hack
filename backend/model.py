@@ -3,6 +3,7 @@ from typing import List
 import torch
 from colpali_engine import ColQwen2, ColQwen2Processor, ColPali, ColPaliProcessor
 from qwen_vl_utils import process_vision_info
+from starlette.concurrency import run_in_threadpool
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 
 
@@ -31,10 +32,10 @@ GenProcessor = AutoProcessor.from_pretrained(
 )
 
 
-def generate_embedding(text: str) -> List[List[float]]:
+async def generate_embedding(text: str) -> List[List[float]]:
     processed_query = ColPaliProcessor.process_queries([text]).to(ColPaliModel.device)
 
-    embeddings = ColPaliModel(**processed_query)
+    embeddings = await run_in_threadpool(ColPaliModel, **processed_query)
 
     return embeddings.cpu().float().numpy()[0].tolist()
 
