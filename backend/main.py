@@ -25,7 +25,7 @@ Settings.llm = None
 import aiofiles
 import uvicorn
 
-from fastapi import FastAPI, UploadFile, Form, BackgroundTasks
+from fastapi import FastAPI, UploadFile, Form, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from services.agent_service import AgentService
@@ -67,9 +67,13 @@ def healthcheck():
 
 @app.post("/query")
 async def query(request: Request, query: QueryRequest):
-    result = await agentService.query(query.question, query.meta)
+    try:
+        result = await agentService.query(query.question, query.meta)
 
-    return result
+        return result
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500)
 
 
 @app.post("/reindex")

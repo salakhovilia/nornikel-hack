@@ -3,6 +3,7 @@ import uuid
 
 import aiofiles.os
 import pymupdf
+import torch
 from PIL import Image
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
@@ -82,6 +83,7 @@ class AgentService:
                         )
                     )
                 await aclient.upsert(COLLECTION_NAME, points=points)
+        torch.cuda.empty_cache()
 
     async def query(self, question: str, meta: dict):
         multivector_query = await generate_embedding(question)
@@ -101,7 +103,11 @@ class AgentService:
         )
 
         image = None
-        if len(search_result.points):
+        if (
+            len(search_result.points)
+            and search_result.points[0].payload.get("file_path") is not None
+            and search_result.points[0].payload.get("source") is not None
+        ):
             path = search_result.points[0].payload["file_path"]
             index = int(search_result.points[0].payload["source"]) - 1
 
@@ -135,6 +141,8 @@ class AgentService:
         ]
 
         output_text = answer(messages)
+
+        torch.cuda.empty_cache()
 
         return {
             "sources": search_result.points,
