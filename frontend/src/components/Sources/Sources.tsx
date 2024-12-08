@@ -14,25 +14,22 @@ type SourcesProps = {
 const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
     const navigate = useNavigate();
 
-    const handleSourceClick = (docId: string, file_path: string, text: string, keywords: string[]) => {
+    const handleSourceClick = (docId: string, file_path: string, text: string, keywords: string[], page: string) => {
         const fileName = file_path.replace(/^uploads\/(?:[^/]+\/)?/, '');
 
         const encodedText = encodeURIComponent(text);
         const encodedFilePath = encodeURIComponent(file_path);
         const encodedFileName = encodeURIComponent(fileName);
+        const encodedFilPage = encodeURIComponent(page);
         const encodedKeywords = encodeURIComponent(keywords.join(', '));
-
-        console.log('encodedText: ', encodedText);
-        console.log('encodedFilePath: ', encodedFilePath);
-        console.log('encodedKeywords: ', encodedKeywords);
 
         console.log(
             'Navigate to: ',
-            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}&page=${encodedFilPage}`,
         );
 
         navigate(
-            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}&page=${encodedFilPage}`,
         );
     };
 
@@ -58,7 +55,7 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
                                 key={index}
                                 className={styles.fileItem}
                                 onClick={() =>
-                                    handleSourceClick(source.docId, source.file_path, text, source.keywords || [])
+                                    handleSourceClick(source.docId, source.file_path, text, source.keywords || [], page)
                                 }
                             >
                                 <FileOutlined className={styles.fileIcon} />
