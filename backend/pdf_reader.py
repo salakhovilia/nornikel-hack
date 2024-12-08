@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional, Dict
 
 import pymupdf
+import torch
 from PIL import Image
 from fsspec import AbstractFileSystem
 from llama_index.core import Document
@@ -60,8 +61,9 @@ class PdfColPaliReader(BaseReader):
                 ColPaliModel.device
             )
 
-            embeddings = await run_in_threadpool(ColPaliModel, **processed_img)
-            embeddings_list = list(embeddings.cpu().float().numpy()[0].tolist())
+            with torch.no_grad():
+                embeddings = await run_in_threadpool(ColPaliModel, **processed_img)
+                embeddings_list = list(embeddings.cpu().float().numpy()[0].tolist())
 
             # text = answer(
             #     [
