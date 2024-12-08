@@ -21,7 +21,6 @@
     max-width: 100%;
 }
 
-
 .fileList {
     padding-top: 16px;
 }
@@ -33,6 +32,7 @@
     gap: 8px;
     color: black;
     cursor: pointer;
+    overflow: hidden; /* Обрезать лишнее содержимое */
 
     &:hover {
         background: #f5f5f5;
@@ -49,11 +49,24 @@
     }
 }
 
+.score {
+    font-weight: bold;
+    flex-shrink: 0;
+    width: 20px;
+    color: #1677fe;
+}
+
 .fileName {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     flex: 1;
+}
+
+.page {
+    flex-shrink: 0;
+    width: 80px;
+    white-space: nowrap;
 }
 
 .placeholder {

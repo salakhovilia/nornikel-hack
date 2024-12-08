@@ -54,28 +54,25 @@ function Search() {
             if (response.ok) {
                 const data: QueryResponse = await response.json();
 
-                const uniqueSourcesSet = new Map<string, Source>();
-
-                data.sources.forEach((item) => {
-                    if (item.payload && item.payload.file_path && item.payload.docId) {
-                        const modifiedPath = item.payload.file_path.replace(`uploads/${item.payload.docId}_`, '');
-                        const source: Source = {
-                            file_path: modifiedPath,
-                            docID: item.payload.docId,
-                        };
-                        uniqueSourcesSet.set(item.payload.docId, source);
-                    }
-                });
-
-                console.log(uniqueSourcesSet);
-
-                const uniqueSources = Array.from(uniqueSourcesSet.values());
+                const sources: Source[] = data.sources
+                    .map((item) => {
+                        if (item.payload && item.payload.file_path && item.payload.docId) {
+                            const source: Source = {
+                                file_path: item.payload.file_path,
+                                docId: item.payload.docId,
+                                score: item.score,
+                                page: item.payload.source,
+                                text: item.payload.text,
+                            };
+                            return source;
+                        }
+                        return null;
+                    })
+                    .filter((source): source is Source => source !== null);
 
                 setQuestions((prev) =>
                     prev.map((q) =>
-                        q.id === questionId
-                            ? { ...q, isLoading: false, answer: data.answer, sources: uniqueSources }
-                            : q,
+                        q.id === questionId ? { ...q, isLoading: false, answer: data.answer, sources: sources } : q,
                     ),
                 );
 
