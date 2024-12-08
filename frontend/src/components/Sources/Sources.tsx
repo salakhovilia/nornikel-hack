@@ -15,7 +15,7 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
     const navigate = useNavigate();
 
     const handleSourceClick = (docId: string, file_path: string, text: string, keywords: string[]) => {
-        const fileName = file_path.replace(`uploads/${docId}`, '');
+        const fileName = file_path.replace(/^uploads\/(?:[^/]+\/)?/, '');
 
         const encodedText = encodeURIComponent(text);
         const encodedFilePath = encodeURIComponent(file_path);
@@ -48,7 +48,7 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
                     </div>
                 ) : sources && sources.length > 0 ? (
                     sources.map((source, index) => {
-                        const fileName = source.file_path.replace(`uploads/${source.docId}`, '');
+                        const fileName = source.file_path.replace(/^uploads\/(?:[^/]+\/)?/, '');
                         const { text, page, score } = source;
 
                         const formattedScore = score.toFixed(1);
