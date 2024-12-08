@@ -93,15 +93,17 @@ class AgentService:
             ),
         )
 
-        path = search_result.points[0].payload["file_path"]
-        index = int(search_result.points[0].payload["source"]) - 1
+        image = None
+        if len(search_result.points):
+            path = search_result.points[0].payload["file_path"]
+            index = int(search_result.points[0].payload["source"]) - 1
 
-        pdf = pymupdf.open(path)
-        page = pdf.load_page(index)
-        pix = page.get_pixmap()
+            pdf = pymupdf.open(path)
+            page = pdf.load_page(index)
+            pix = page.get_pixmap()
 
-        image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-        image = image.resize((448, 448))
+            image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+            image = image.resize((448, 448))
 
         text = ""
         for p in search_result.points:
@@ -135,7 +137,17 @@ class AgentService:
     async def reindex(self):
         files_paths = await aiofiles.os.listdir("uploads")
 
+        for i in range(len(files_paths)):
+            files_paths[i] = (
+                files_paths[i],
+                await aiofiles.os.path.getsize(f"uploads/{files_paths[i]}"),
+            )
+
+        files_paths.sort(key=lambda filename: filename[1])
+
         for ind, file in enumerate(files_paths):
-            await self.process_file(str(uuid.uuid4()), f"uploads/{file}", {})
+            logger.info(f"Processing {file[0]}")
+
+            await self.process_file(str(uuid.uuid4()), f"uploads/{file[0]}", {})
 
             logger.info(f"Processed {ind + 1}/{len(files_paths)}")
