@@ -7,7 +7,6 @@ const { Header } = Layout;
 
 const pageTitles: Record<string, string> = {
     '/search': 'Поиск',
-    '/settings': 'Настройки',
     '/upload': 'Загрузка файлов',
 };
 
@@ -17,7 +16,7 @@ function AppHeader() {
 
     const isSourcePage = location.pathname === '/source';
     const isBasePage = !!pageTitles[location.pathname];
-    const sourceName = searchParams.get('name') || '';
+    const sourceName = searchParams.get('file_name') || '';
 
     return (
         <Header className={styles.header}>

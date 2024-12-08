@@ -15,8 +15,11 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
     const navigate = useNavigate();
 
     const handleSourceClick = (file_path: string, text: string, keywords: string[]) => {
+        const file_name = file_path.split('_').slice(1).join('_');
+
         const encodedText = encodeURIComponent(text);
         const encodedFilePath = encodeURIComponent(file_path);
+        const encodedFileName = encodeURIComponent(file_name);
         const encodedKeywords = encodeURIComponent(keywords.join(', '));
 
         console.log('encodedText: ', encodedText);
@@ -25,10 +28,12 @@ const Sources: React.FC<SourcesProps> = ({ question, sources, isLoading }) => {
 
         console.log(
             'Navigate to: ',
-            `/source?file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
         );
 
-        navigate(`/source?file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`);
+        navigate(
+            `/source?file_name=${encodedFileName}&file_path=${encodedFilePath}&text=${encodedText}&keywords=${encodedKeywords}`,
+        );
     };
 
     return (
