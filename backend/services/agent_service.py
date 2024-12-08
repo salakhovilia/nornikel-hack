@@ -155,6 +155,9 @@ class AgentService:
         for ind, file in enumerate(files_paths):
             logger.info(f"Processing {file[0]}")
 
-            await self.process_file(str(uuid.uuid4()), f"uploads/{file[0]}", {})
+            try:
+                await self.process_file(str(uuid.uuid4()), f"uploads/{file[0]}", {})
+            except Exception as e:
+                logger.error(e)
 
             logger.info(f"Processed {ind + 1}/{len(files_paths)}")
