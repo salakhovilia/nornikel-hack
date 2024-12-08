@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
@@ -72,10 +73,8 @@ async def query(request: Request, query: QueryRequest):
 
 
 @app.post("/reindex")
-async def reindex(request: Request):
-    result = await agentService.reindex()
-
-    return result
+async def reindex(request: Request, background_tasks: BackgroundTasks):
+    background_tasks.add_task(agentService.reindex)
 
 
 @app.post("/files")
@@ -97,7 +96,7 @@ async def add_file(
 
     meta = json.loads(meta)
 
-    await agentService.process_file(id, file_path, meta)
+    background_tasks.add_task(agentService.process_file, id, file_path, meta)
 
     return {"status": "ok"}
 
