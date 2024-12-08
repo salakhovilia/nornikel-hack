@@ -1,3 +1,4 @@
+import gc
 import logging
 import uuid
 
@@ -84,6 +85,7 @@ class AgentService:
                     )
                 await aclient.upsert(COLLECTION_NAME, points=points)
         torch.cuda.empty_cache()
+        gc.collect()
 
     async def query(self, question: str, meta: dict):
         multivector_query = await generate_embedding(question)
@@ -143,6 +145,7 @@ class AgentService:
         output_text = answer(messages)
 
         torch.cuda.empty_cache()
+        gc.collect()
 
         return {
             "sources": search_result.points,
@@ -163,8 +166,13 @@ class AgentService:
         for ind, file in enumerate(files_paths):
             logger.info(f"Processing {file[0]}")
 
+            id = str(uuid.uuid4())
+            name = f"uploads/{id}_{file[0]}"
+
+            await aiofiles.os.rename(f"uploads/{id}{file[0]}", name)
+
             try:
-                await self.process_file(str(uuid.uuid4()), f"uploads/{file[0]}", {})
+                await self.process_file(id, name, {})
             except Exception as e:
                 logger.error(e)
 
