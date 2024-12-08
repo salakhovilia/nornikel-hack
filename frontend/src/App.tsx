@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import Sidebar from '@components/Sidebar/Sidebar';
 import Header from '@components/Header/Header';
 import styles from './App.module.scss';
@@ -32,6 +32,7 @@ function App() {
                     <Header />
                     <Content className={styles.content}>
                         <Routes>
+                            <Route path="/" element={<Navigate to="/search" />} />
                             <Route path="/search" element={<Search />} />
                             <Route path="/source" element={<Source />} />
                             <Route path="/upload" element={<Upload />} />
